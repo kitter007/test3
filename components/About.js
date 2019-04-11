@@ -80,7 +80,6 @@ class About extends Component{
         );
     }
 }
-
 const styles = {
     text: {
         fontSize: 25
