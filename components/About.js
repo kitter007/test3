@@ -1,12 +1,18 @@
 //import Library
 import React, {Component} from 'react';
-import {View,Text,ActivityIndicator } from 'react-native';
+import {View,Text,ActivityIndicator,Button } from 'react-native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-community/async-storage';
 
 //write component
 class About extends Component{
     static navigationOptions = {
         title:'Profile',
+        headerLeft: null,
+        headerStyle: {
+            backgroundColor: "#D0B3E1",
+        },
+        headerTintColor: "black",
     };
     constructor(){ //auto working when class first run
         super();
@@ -16,15 +22,14 @@ class About extends Component{
         }
     }
 
-    componentDidMount(){ //work after render() is run
-        const url='http://128.199.240.120:9999/api/auth/me';
-        const config = {
-            headers:{
-                accept:'*/*',
-                Authorization:'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI1Y2E1YjA4MjE5OGUwMDA4NDcyZGRlNGQiLCJpYXQiOjE1NTQ5NjkzOTN9.yIafF1xw_mzWE3DNuTkED-JdD-vCaSq0sJeD5gsJ0X4'
-            }
-        }
-        axios.get(url,config)
+    async componentDidMount(){ //work after render() is run
+        const token = await AsyncStorage.getItem('@storage_Token')
+        axios.get("http://128.199.240.120:9999/api/auth/me", {
+                headers: {
+                    "accept":"*/*",
+                    "Authorization": "Bearer " + token
+                }
+            })
         .then(response =>{
             console.log(response);
             this.setState({
@@ -36,7 +41,11 @@ class About extends Component{
             console.log('error',error);
         })
     }
-
+    async Logout(){
+        await AsyncStorage.removeItem("@storage_Token");
+        const {navigate} = this.props.navigation;
+        return navigate('Login')
+    }
     render() {
         if (this.state.name == '') {
             return(
@@ -47,9 +56,26 @@ class About extends Component{
         }
 
         return (
-            <View>
-                <Text style={styles.text}>Name: {this.state.name}</Text>
-                <Text style={styles.text}>Email: {this.state.email}</Text>
+            <View style={{ paddingTop: 10 }}>
+                <Text style={{ textAlign: "center", fontSize: 28, color: "black" }}>Profile</Text>
+                <View style={{ padding: 20}}>
+                    <Text style={styles.text}>Name: {this.state.name}</Text>
+                    <Text style={styles.text}>Email: {this.state.email}</Text>
+
+                    <View style={{ marginTop: 40 }}>
+                    <Button 
+                        title="Back"
+                        onPress={() =>
+                        this.props.navigation.push('Login')}
+                    />
+                    </View>
+                    <View style={{ paddingTop: 10 }}>
+                    <Button  
+                        title="Logout"
+                        onPress={this.Logout.bind(this)}
+                    />
+                    </View>
+                </View>
             </View>
         );
     }
@@ -58,6 +84,10 @@ class About extends Component{
 const styles = {
     text: {
         fontSize: 25
+    },
+    lastText: {
+        fontSize: 30,
+        marginBottom: 20
     }
 }
 
